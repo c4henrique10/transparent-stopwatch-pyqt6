@@ -42,8 +42,39 @@ class TransparentStopwatch(QWidget):
         
     def init_ui(self):
         layout = QVBoxLayout()
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(10, 10, 10, 10)
+        
+        # --- TOP CLOSE BUTTON ---
+        top_layout = QHBoxLayout()
+        self.close_btn = QPushButton("✕")
+        self.close_btn.setFixedSize(24, 24)
+        self.close_btn.setToolTip("Fechar (Ctrl+Q)")
+        close_btn_style = """
+            QPushButton {
+                background-color: transparent;
+                color: rgba(255, 255, 255, 120);
+                border: none;
+                font-family: Arial;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                color: white;
+                background-color: rgba(255, 80, 80, 180);
+                border-radius: 12px;
+            }
+            QPushButton:pressed {
+                background-color: rgba(200, 0, 0, 180);
+            }
+        """
+        self.close_btn.setStyleSheet(close_btn_style)
+        self.close_btn.clicked.connect(self.close)
+        
+        top_layout.addStretch()
+        top_layout.addWidget(self.close_btn)
+        
+        layout.addLayout(top_layout)
+        layout.addStretch() # Push center content down
         
         # --- TIME DISPLAY ---
         self.time_label = QLabel("00:00:00", self)
@@ -133,6 +164,7 @@ class TransparentStopwatch(QWidget):
         layout.addWidget(self.time_label, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addLayout(btn_layout)
         layout.addLayout(opacity_layout)
+        layout.addStretch() # Push center content up
         
         self.setLayout(layout)
 
@@ -196,12 +228,14 @@ class TransparentStopwatch(QWidget):
         else:
             self.adjust_opacity(-0.05) # Scroll down
 
-    # Standard Keyboard inputs for +/- to adjust opacity
+    # Standard Keyboard inputs for +/- to adjust opacity and Ctrl+Q to close
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Plus or event.key() == Qt.Key.Key_Equal:
             self.adjust_opacity(0.05)
         elif event.key() == Qt.Key.Key_Minus:
             self.adjust_opacity(-0.05)
+        elif event.key() == Qt.Key.Key_Q and (event.modifiers() & Qt.KeyboardModifier.ControlModifier):
+            self.close()
 
     def adjust_opacity(self, delta):
         # Clip opacity bounds securely between 10% and 100%
